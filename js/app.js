@@ -1,9 +1,8 @@
 // Single Page Application pour Sprint Capacity
-// Gestion de l'authentification, navigation et vues
+// Navigation et gestion des vues
 
 const appEl = document.getElementById('app');
 const navBtns = document.querySelectorAll('.nav-btn');
-const logoutBtn = document.getElementById('logoutBtn');
 const formModal = document.getElementById('formModal');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const confirmModal = document.getElementById('confirmModal');
@@ -46,23 +45,6 @@ async function confirm(title, message, callback) {
 }
 
 // ============= Vues =============
-
-async function renderLoginView() {
-  const html = `
-    <div class="card" style="max-width: 500px; margin: 3rem auto; text-align: center;">
-      <h2>Sprint Capacity</h2>
-      <p>Application de suivi de capacité d'équipe</p>
-      <p style="color: var(--muted);">Connectez-vous avec GitHub pour commencer</p>
-      <button id="githubLoginBtn" class="btn" style="width: 100%; padding: 1rem;">
-        Se connecter avec GitHub
-      </button>
-    </div>
-  `;
-  appEl.innerHTML = html;
-  document.getElementById('githubLoginBtn').addEventListener('click', () => {
-    window.Auth.login();
-  });
-}
 
 async function renderDashboardView() {
   showSpinner();
@@ -548,29 +530,13 @@ confirmOk.addEventListener('click', async () => {
   closeConfirm();
 });
 
-logoutBtn.addEventListener('click', () => {
-  window.Auth.logout();
-});
-
 // ============= Initialisation =============
 
 async function bootstrap() {
   try {
     showSpinner();
 
-    // Traitement du callback OAuth
-    const loggedIn = await window.Auth.handleCallback();
-
-    // Vérification de l'authentification
-    if (!window.Auth.isLogged()) {
-      logoutBtn.style.display = 'none';
-      document.querySelector('nav').style.display = 'none';
-      renderLoginView();
-      return;
-    }
-
-    // Authentifié : afficher l'interface
-    logoutBtn.style.display = 'block';
+    // Afficher l'interface directement
     document.querySelector('nav').style.display = 'flex';
     await changeView('dashboard');
   } catch (error) {
