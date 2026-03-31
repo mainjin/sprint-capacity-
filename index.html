@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprint Capacity</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <!-- Navigation bar -->
+    <header class="navbar">
+      <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="margin: 0;">Sprint Capacity</h1>
+        <nav style="display: flex; gap: 1rem; align-items: center;">
+          <button id="navDashboard" class="nav-btn active" data-view="dashboard">Dashboard</button>
+          <button id="navMembers" class="nav-btn" data-view="members">Membres</button>
+          <button id="navSprints" class="nav-btn" data-view="sprints">Sprints</button>
+          <button id="navLeaves" class="nav-btn" data-view="leaves">Congés</button>
+          <button id="logoutBtn" class="btn secondary" type="button" style="margin-left: 1rem;">Déconnecter</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main content area -->
+    <main class="container">
+      <div id="app"></div>
+    </main>
+
+    <!-- Generic modal for forms -->
+    <dialog id="formModal" class="modal">
+      <div style="position: relative;">
+        <button id="closeModalBtn" type="button" style="position: absolute; top: 0; right: 0; background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+        <h2 id="modalTitle" style="margin-top: 0;"></h2>
+        <form id="dynamicForm" class="stack"></form>
+      </div>
+    </dialog>
+
+    <!-- Confirmation modal -->
+    <dialog id="confirmModal" class="modal">
+      <div>
+        <h3 id="confirmTitle" style="margin-top: 0;"></h3>
+        <p id="confirmMessage"></p>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button id="confirmCancel" class="btn secondary" type="button">Annuler</button>
+          <button id="confirmOk" class="btn danger" type="button">Confirmer</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Spinner overlay -->
+    <div id="spinner" class="spinner-overlay" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+      import { CONFIG } from './config.js';
+      window.CONFIG = CONFIG;
+    </script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/members.js"></script>
+    <script src="./js/sprints.js"></script>
+    <script src="./js/leaves.js"></script>
+    <script src="./js/dashboard.js"></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
