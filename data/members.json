@@ -30,5 +30,13 @@
     "role": "Développeur Digital",
     "occupancy_rate": 1,
     "created_at": "2026-03-31T20:59:19.221Z"
+  },
+  {
+    "id": "c19a9373-a905-4410-a97f-0ec7c3c4d06d",
+    "firstname": "test1",
+    "lastname": "dev1",
+    "role": "Développeur Digital",
+    "occupancy_rate": 1,
+    "created_at": "2026-03-31T21:41:48.957Z"
   }
 ]
