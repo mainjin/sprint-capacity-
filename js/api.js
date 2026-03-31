@@ -70,47 +70,57 @@ import { CONFIG } from '../config.js';
   }
 
   /**
-   * Écrit un fichier JSON via le Cloudflare Worker.
-   * Le Worker se charge du token PAT et de l'appel GitHub.
+   * Écrit un fichier JSON via l'API GitHub Contents (PUT).
+   * Utilise le token GitHub personnel stocké en localStorage.
    * @param {string} path - Chemin du fichier (ex: "data/members.json")
    * @param {Array} data - Données à écrire (sera encodée en base64)
    * @param {string} sha - SHA actuel du fichier (pour détecter les conflits)
-   * @returns {Promise<string>} Nouveau SHA retourné par le Worker
+   * @returns {Promise<string>} Nouveau SHA retourné par GitHub
    */
   async function writeFile(path, data, sha) {
     try {
       console.log(`[API] WRITE: ${path}`);
 
-      if (!CONFIG.WORKER_URL) {
-        throw new Error('WORKER_URL non configuré dans config.js');
+      const token = window.Auth?.getToken();
+      if (!token) {
+        throw new Error('Token GitHub non configuré. Veuillez fournir un token personnel.');
       }
 
       const content = toBase64(JSON.stringify(data, null, 2));
       const now = new Date().toLocaleString('fr-FR');
       const message = `chore: update ${path} - ${now}`;
 
-      const response = await fetch(CONFIG.WORKER_URL, {
-        method: 'POST',
+      const url = getGitHubFileUrl(path);
+      const response = await fetch(url, {
+        method: 'PUT',
         headers: {
+          'Authorization': `token ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          path,
+          message,
           content,
-          sha,
-          message
+          sha
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        
+        // Gestion du conflit SHA (409)
+        if (response.status === 409) {
+          console.warn(`[API] WRITE CONFLICT (409): ${path} - récupération du SHA actuel...`);
+          const { data: _, sha: currentSha } = await readFile(path);
+          return writeFile(path, data, currentSha);
+        }
+
         throw new Error(
-          `Erreur Worker (${response.status}): ${errorData.error || 'Impossible d\'écrire le fichier'}`
+          `Erreur GitHub (${response.status}): ${errorData.message || 'Impossible d\'écrire le fichier'}`
         );
       }
 
       const result = await response.json();
-      const newSha = result.sha;
+      const newSha = result.commit.sha;
 
       console.log(`[API] WRITE SUCCESS: ${path} (nouveau sha: ${newSha.slice(0, 8)})`);
       return newSha;

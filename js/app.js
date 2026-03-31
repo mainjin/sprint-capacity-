@@ -532,11 +532,97 @@ confirmOk.addEventListener('click', async () => {
 
 // ============= Initialisation =============
 
+async function renderTokenForm() {
+  const html = `
+    <div class="card" style="max-width: 600px; margin: 3rem auto;">
+      <h2>Configuration - Token GitHub</h2>
+      <p>Pour utiliser cette application, vous devez fournir un token GitHub personnel.</p>
+      
+      <div style="background: #1f2937; padding: 1rem; border-radius: 8px; margin: 1rem 0; font-size: 0.85rem;">
+        <strong>Comment obtenir un token :</strong>
+        <ol style="margin: 0.5rem 0; padding-left: 1.5rem;">
+          <li>Allez sur <a href="https://github.com/settings/tokens" target="_blank" style="color: #3b82f6;">GitHub Settings → Tokens</a></li>
+          <li>Cliquez "Generate new token (classic)"</li>
+          <li>Donner un nom (ex: "sprint-capacity")</li>
+          <li>Sélectionnez le scope <strong>repo</strong> (accès complet aux dépôts privés/publics)</li>
+          <li>Cliquez "Generate token"</li>
+          <li>Copiez le token (vous ne pourrez pas le revoir après)</li>
+        </ol>
+      </div>
+
+      <form id="tokenForm" class="stack">
+        <label>
+          Token GitHub :
+          <input 
+            name="token" 
+            type="password" 
+            placeholder="ghp_..." 
+            required 
+            style="width: 100%; margin-top: 0.25rem; font-family: monospace;" 
+          />
+        </label>
+        <small style="color: var(--muted);">Le token est stocké localement en localStorage. Jamais envoyé à un serveur.</small>
+        <button type="submit" class="btn" style="width: 100%;">Valider le token</button>
+      </form>
+    </div>
+  `;
+  
+  appEl.innerHTML = html;
+  
+  document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = document.querySelector('input[name="token"]').value.trim();
+    
+    if (!token) {
+      showError('Le token ne peut pas être vide');
+      return;
+    }
+
+    try {
+      showSpinner();
+
+      // Vérifier le token en essayant de récupérer le profil utilisateur
+      const response = await fetch('https://api.github.com/user', {
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Token invalide ou expiré');
+      }
+
+      const user = await response.json();
+      console.log(`[Auth] Token valide pour l'utilisateur: ${user.login}`);
+
+      // Stocker le token
+      window.Auth.setToken(token);
+
+      // Afficher l'interface
+      hideSpinner();
+      document.querySelector('nav').style.display = 'flex';
+      await changeView('dashboard');
+    } catch (error) {
+      hideSpinner();
+      showError(error.message);
+    }
+  });
+}
+
 async function bootstrap() {
   try {
     showSpinner();
 
-    // Afficher l'interface directement
+    // Vérifier si un token est présent
+    if (!window.Auth.hasToken()) {
+      hideSpinner();
+      document.querySelector('nav').style.display = 'none';
+      await renderTokenForm();
+      return;
+    }
+
+    // Token présent : afficher l'interface
     document.querySelector('nav').style.display = 'flex';
     await changeView('dashboard');
   } catch (error) {
