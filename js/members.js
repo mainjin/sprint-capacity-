@@ -3,7 +3,7 @@
 // Modèle : { id, firstname, lastname, role, occupancy_rate, created_at }
 
 (function () {
-  const TYPE = 'members';
+  const TYPE = 'data/members.json';
   let cache = null;
   let cacheSha = null;
 

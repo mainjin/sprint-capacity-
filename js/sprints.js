@@ -3,7 +3,7 @@
 // Modèle : { id, name, start_date, end_date, sta_date, mep_date, working_days, created_at }
 
 (function () {
-  const TYPE = 'sprints';
+  const TYPE = 'data/sprints.json';
   let cache = null;
   let cacheSha = null;
 

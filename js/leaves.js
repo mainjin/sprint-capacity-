@@ -4,7 +4,7 @@
 // Note : 1 entrée par jour, pas par plage
 
 (function () {
-  const TYPE = 'leaves';
+  const TYPE = 'data/leaves.json';
   const LEAVE_TYPES = ['CP', 'RTT', 'Maladie', 'Autre'];
   let cache = null;
   let cacheSha = null;
