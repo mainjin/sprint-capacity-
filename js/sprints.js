@@ -167,11 +167,11 @@
 
       // Ajout et sauvegarde
       sprints.push(sprint);
-      await window.GitHubAPI.writeFile(TYPE, sprints, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, sprints, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = sprints.sort((a, b) => a.start_date.localeCompare(b.start_date));
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Sprints] Sprint créé: ${sprint.id} (${workingDays} jours ouvrés)`);
       return sprint;
@@ -240,11 +240,11 @@
       sprints[sprintIndex] = updated;
 
       // Sauvegarde
-      await window.GitHubAPI.writeFile(TYPE, sprints, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, sprints, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = sprints.sort((a, b) => a.start_date.localeCompare(b.start_date));
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Sprints] Sprint mis à jour: ${id} (${workingDays} jours ouvrés)`);
       return updated;
@@ -290,11 +290,11 @@
       }
 
       // Sauvegarde
-      await window.GitHubAPI.writeFile(TYPE, filtered, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, filtered, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = filtered.sort((a, b) => a.start_date.localeCompare(b.start_date));
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Sprints] Sprint supprimé: ${id}`);
     } catch (error) {

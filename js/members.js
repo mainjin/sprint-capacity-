@@ -102,11 +102,11 @@
 
       // Ajout et sauvegarde
       members.push(member);
-      await window.GitHubAPI.writeFile(TYPE, members, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, members, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = members;
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Members] Membre créé: ${member.id}`);
       return member;
@@ -162,11 +162,11 @@
       members[memberIndex] = updated;
 
       // Sauvegarde
-      await window.GitHubAPI.writeFile(TYPE, members, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, members, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = members;
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Members] Membre mis à jour: ${id}`);
       return updated;
@@ -209,10 +209,11 @@
       }
 
       // Sauvegarde
-      await window.GitHubAPI.writeFile(TYPE, filtered, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, filtered, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = filtered;
+      cacheSha = newSha;
       cacheSha = sha;
 
       console.log(`[Members] Membre supprimé: ${id}`);

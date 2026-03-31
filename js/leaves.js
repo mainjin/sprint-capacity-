@@ -167,11 +167,11 @@
       // Sauvegarde
       if (addedCount > 0) {
         const updated = [...leaves, ...newLeaves];
-        await window.GitHubAPI.writeFile(TYPE, updated, sha);
+        const newSha = await window.GitHubAPI.writeFile(TYPE, updated, sha);
 
-        // Mise à jour du cache
+        // Mise à jour du cache avec le nouveau SHA
         cache = updated;
-        cacheSha = sha;
+        cacheSha = newSha;
 
         console.log(`[Leaves] ${addedCount} jour(s) de congés ajouté(s)`);
       } else {
@@ -256,11 +256,11 @@
       }
 
       // Sauvegarde
-      await window.GitHubAPI.writeFile(TYPE, filtered, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, filtered, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = filtered;
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Leaves] Congé supprimé: ${id}`);
     } catch (error) {
@@ -294,11 +294,11 @@
       }
 
       // Sauvegarde
-      await window.GitHubAPI.writeFile(TYPE, filtered, sha);
+      const newSha = await window.GitHubAPI.writeFile(TYPE, filtered, sha);
 
-      // Mise à jour du cache
+      // Mise à jour du cache avec le nouveau SHA
       cache = filtered;
-      cacheSha = sha;
+      cacheSha = newSha;
 
       console.log(`[Leaves] Congé(s) supprimé(s) : ${memberId} le ${date}`);
     } catch (error) {
