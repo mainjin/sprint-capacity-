@@ -112,6 +112,14 @@
   }
 
   /**
+   * Récupère les sprints du cache (sans requête réseau).
+   * @returns {Array}
+   */
+  function getAllFromCache() {
+    return cache || [];
+  }
+
+  /**
    * Récupère tous les sprints triés par start_date (avec cache).
    * @returns {Promise<Array>}
    */
@@ -306,6 +314,7 @@
   // Exposition sur window.Sprints
   window.Sprints = {
     getAll,
+    getAllFromCache,
     add,
     update,
     delete: delete_,

@@ -28,6 +28,19 @@ function showError(message) {
   console.error(message);
 }
 
+function handleApiError(error) {
+  const message = error.message || 'Une erreur est survenue';
+  
+  // Si c'est une erreur 401, afficher le formulaire de token
+  if (message.includes('401') || message.includes('Bad credentials')) {
+    showError('Token GitHub invalide ou expiré. Veuillez configurer un nouveau token.');
+    window.Auth.clearToken();
+    renderTokenForm();
+  } else {
+    showError(message);
+  }
+}
+
 function closeModal() {
   formModal.close();
 }
@@ -103,9 +116,9 @@ async function renderDashboardView() {
 }
 
 async function renderMembersView() {
-  showSpinner();
   try {
-    const members = await window.Members.getAll();
+    // Afficher immédiatement depuis le cache (pas de spinner)
+    let members = window.Members.getAllFromCache();
 
     let html = `
       <div class="card card-wide">
@@ -167,24 +180,27 @@ async function renderMembersView() {
             closeConfirm();
             renderMembersView();
           } catch (error) {
-            showError(error.message);
-          } finally {
             hideSpinner();
+            handleApiError(error);
           }
         });
       });
     });
+
+    // Recharger en arrière-plan
+    window.Members.getAll().catch(err => {
+      console.error('[App] Erreur lors du refresh des membres:', err);
+      handleApiError(err);
+    });
   } catch (error) {
-    showError(error.message);
-  } finally {
-    hideSpinner();
+    handleApiError(error);
   }
 }
 
 async function renderSprintsView() {
-  showSpinner();
   try {
-    const sprints = await window.Sprints.getAll();
+    // Afficher immédiatement depuis le cache
+    const sprints = window.Sprints.getAllFromCache();
 
     let html = `
       <div class="card card-wide">
@@ -252,18 +268,19 @@ async function renderSprintsView() {
         });
       });
     });
+
+    // Recharger en arrière-plan
+    window.Sprints.getAll().catch(err => console.error('[App] Erreur lors du refresh des sprints:', err));
   } catch (error) {
     showError(error.message);
-  } finally {
-    hideSpinner();
   }
 }
 
 async function renderLeavesView() {
-  showSpinner();
   try {
-    const members = await window.Members.getAll();
-    const leaves = await window.Leaves.getAll();
+    // Afficher immédiatement depuis le cache
+    const members = window.Members.getAllFromCache();
+    const leaves = window.Leaves.getAllFromCache();
 
     let html = `
       <div class="card card-wide">
@@ -344,7 +361,8 @@ async function renderLeavesView() {
           fd.get('type')
         );
         alert(`${added} jour(s) de congé(s) ajouté(s)`);
-        renderLeavesView();
+        closeModal();
+        setTimeout(() => renderLeavesView(), 100);
       } catch (error) {
         showError(error.message);
         hideSpinner();
@@ -371,10 +389,14 @@ async function renderLeavesView() {
         });
       }
     });
+
+    // Recharger en arrière-plan
+    Promise.all([
+      window.Members.getAll().catch(err => console.error('[App] Erreur lors du refresh des membres:', err)),
+      window.Leaves.getAll().catch(err => console.error('[App] Erreur lors du refresh des congés:', err))
+    ]).catch(() => {});
   } catch (error) {
     showError(error.message);
-  } finally {
-    hideSpinner();
   }
 }
 
@@ -417,7 +439,8 @@ function showMemberForm(member = null) {
         });
       }
       closeModal();
-      renderMembersView();
+      // Afficher immédiatement avec le cache
+      setTimeout(() => renderMembersView(), 100);
     } catch (error) {
       showError(error.message);
       hideSpinner();
@@ -468,7 +491,8 @@ function showSprintForm(sprint = null) {
         });
       }
       closeModal();
-      renderSprintsView();
+      // Afficher immédiatement avec le cache
+      setTimeout(() => renderSprintsView(), 100);
     } catch (error) {
       showError(error.message);
       hideSpinner();
@@ -541,12 +565,12 @@ async function renderTokenForm() {
       <div style="background: #1f2937; padding: 1rem; border-radius: 8px; margin: 1rem 0; font-size: 0.85rem;">
         <strong>Comment obtenir un token :</strong>
         <ol style="margin: 0.5rem 0; padding-left: 1.5rem;">
-          <li>Allez sur <a href="https://github.com/settings/tokens" target="_blank" style="color: #3b82f6;">GitHub Settings → Tokens</a></li>
+          <li>Allez sur <a href="https://github.com/settings/tokens" target="_blank" style="color: #3b82f6;">GitHub Settings → Tokens (classic)</a></li>
           <li>Cliquez "Generate new token (classic)"</li>
           <li>Donner un nom (ex: "sprint-capacity")</li>
-          <li>Sélectionnez le scope <strong>repo</strong> (accès complet aux dépôts privés/publics)</li>
+          <li>Sélectionnez le scope <strong>repo</strong> (accès complet aux dépôts)</li>
           <li>Cliquez "Generate token"</li>
-          <li>Copiez le token (vous ne pourrez pas le revoir après)</li>
+          <li>Copiez le token <strong>(vous ne pourrez pas le revoir après)</strong></li>
         </ol>
       </div>
 
@@ -559,15 +583,21 @@ async function renderTokenForm() {
             placeholder="ghp_..." 
             required 
             style="width: 100%; margin-top: 0.25rem; font-family: monospace;" 
+            autocomplete="off"
           />
         </label>
-        <small style="color: var(--muted);">Le token est stocké localement en localStorage. Jamais envoyé à un serveur.</small>
+        <small style="color: var(--muted);">
+          ✓ Le token est stocké <strong>localement</strong> en localStorage.<br/>
+          ✓ Jamais envoyé à un serveur (sauf à api.github.com).<br/>
+          ✓ Vous pouvez le révoquer à tout moment sur GitHub.
+        </small>
         <button type="submit" class="btn" style="width: 100%;">Valider le token</button>
       </form>
     </div>
   `;
   
   appEl.innerHTML = html;
+  document.querySelector('nav').style.display = 'none';
   
   document.getElementById('tokenForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -590,7 +620,8 @@ async function renderTokenForm() {
       });
 
       if (!response.ok) {
-        throw new Error('Token invalide ou expiré');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Token invalide ou expiré');
       }
 
       const user = await response.json();

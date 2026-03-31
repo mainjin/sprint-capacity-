@@ -85,6 +85,14 @@
   }
 
   /**
+   * Récupère les congés du cache (sans requête réseau).
+   * @returns {Array}
+   */
+  function getAllFromCache() {
+    return cache || [];
+  }
+
+  /**
    * Récupère tous les congés (avec cache).
    * @returns {Promise<Array>}
    */
@@ -310,6 +318,7 @@
   // Exposition sur window.Leaves
   window.Leaves = {
     getAll,
+    getAllFromCache,
     addRange,
     delete: delete_,
     deleteByMemberAndDate,

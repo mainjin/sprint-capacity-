@@ -57,6 +57,14 @@
   }
 
   /**
+   * Récupère les membres du cache (sans requête réseau).
+   * @returns {Array}
+   */
+  function getAllFromCache() {
+    return cache || [];
+  }
+
+  /**
    * Récupère tous les membres (avec cache).
    * @returns {Promise<Array>}
    */
@@ -226,6 +234,7 @@
   // Exposition sur window.Members
   window.Members = {
     getAll,
+    getAllFromCache,
     add,
     update,
     delete: delete_,
