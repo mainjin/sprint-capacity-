@@ -21,8 +21,9 @@
     try {
       console.log(`[Dashboard] Calcul de capacité pour sprint: ${sprintId}`);
 
-      // Récupération du sprint
-      const sprint = window.Sprints?.getById(sprintId);
+      // Récupération du sprint (doit charger d'abord)
+      const sprints = await window.Sprints.getAll();
+      const sprint = sprints.find(s => s.id === sprintId);
       if (!sprint) {
         throw new Error(`Sprint non trouvé : ${sprintId}`);
       }
