@@ -614,16 +614,29 @@ async function bootstrap() {
   try {
     showSpinner();
 
+    // Attendre que Auth soit disponible
+    let attempts = 0;
+    while (!window.Auth && attempts < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      attempts++;
+    }
+
+    if (!window.Auth) {
+      throw new Error('Module Auth non chargé');
+    }
+
     // Vérifier si un token est présent
     if (!window.Auth.hasToken()) {
       hideSpinner();
-      document.querySelector('nav').style.display = 'none';
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = 'none';
       await renderTokenForm();
       return;
     }
 
     // Token présent : afficher l'interface
-    document.querySelector('nav').style.display = 'flex';
+    const nav = document.querySelector('nav');
+    if (nav) nav.style.display = 'flex';
     await changeView('dashboard');
   } catch (error) {
     console.error('Erreur lors du chargement:', error);
